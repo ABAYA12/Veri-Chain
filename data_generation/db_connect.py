@@ -4,7 +4,7 @@ import os
 
 # Load environment variables from .env file
 load_dotenv()
-urlSupaBaseTable = os.getenv("urlDataBase")
+urlSupaBaseTable = os.getenv("DIRECT_URL")
 
 def connect_db():
     try:
@@ -14,7 +14,7 @@ def connect_db():
                 # Define all SQL table creation statements
                 query = """
                 -- USER Table
-                CREATE TABLE IF NOT EXISTS user (
+                CREATE TABLE IF NOT EXISTS users (
                     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                     public_key TEXT NOT NULL UNIQUE,
                     registration_date TIMESTAMP DEFAULT NOW(),
@@ -24,7 +24,7 @@ def connect_db():
                 -- IDENTITY Table
                 CREATE TABLE IF NOT EXISTS identity (
                     identity_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    user_id UUID REFERENCES user(user_id) ON DELETE CASCADE,
+                    user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
                     ipfs_hash TEXT NOT NULL UNIQUE,
                     creation_date TIMESTAMP DEFAULT NOW(),
                     last_updated TIMESTAMP DEFAULT NOW(),
@@ -66,7 +66,7 @@ def connect_db():
                 CREATE TABLE IF NOT EXISTS transaction (
                     transaction_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                     contract_address TEXT REFERENCES smart_contract(contract_address) ON DELETE CASCADE,
-                    user_id UUID REFERENCES user(user_id) ON DELETE CASCADE,
+                    user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
                     verification_id UUID REFERENCES verification(verification_id) ON DELETE CASCADE,
                     transaction_date TIMESTAMP DEFAULT NOW(),
                     transaction_type TEXT CHECK (transaction_type IN ('identity_registration', 'verification_request', 'credential_issue')) NOT NULL,
@@ -76,7 +76,7 @@ def connect_db():
                 -- IPFS_STORAGE Table
                 CREATE TABLE IF NOT EXISTS ipfs_storage (
                     content_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    user_id UUID REFERENCES user(user_id) ON DELETE CASCADE,
+                    user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
                     ipfs_hash TEXT NOT NULL UNIQUE,
                     storage_date TIMESTAMP DEFAULT NOW(),
                     content_type TEXT CHECK (content_type IN ('identity', 'credential')) NOT NULL,
